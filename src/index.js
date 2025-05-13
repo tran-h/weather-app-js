@@ -73,6 +73,10 @@ async function getWeather(location) {
     //show convert temperature button only when data is present
     convertBtn.className = "active";
 
+    //reset to default values so logic below works as intended
+    arrayOfTemps = [];
+    currentUnits = "F";
+
     //create an array of temps to make it easier to convert units later
     for (let i = 0; i < 6; i++) {
       const obj = {
