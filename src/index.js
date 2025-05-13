@@ -8,9 +8,30 @@ const currentForecastContainer = document.querySelector(
 );
 const searchBox = document.querySelector("#search-box");
 const searchBtn = document.querySelector("#search-btn");
+const convertBtn = document.querySelector("#convert-btn");
+let currentUnits = "F"; //for determining which unit to convert to
+let arrayOfTemps = []; //create an array of temps to make it easier to convert units later
 
 function convertToCelsius(fahrenheit) {
   return Math.round((fahrenheit - 32) / 1.8);
+}
+
+function convertToFahrenheit(celsius) {
+  return Math.round(celsius * 1.8 + 32);
+}
+
+function updateTempsDisplay() {
+  const tmp = document.querySelectorAll(".temp-div");
+  const feels = document.querySelectorAll(".feels-div");
+  const highlow = document.querySelectorAll(".high-low-div");
+
+  for (let i = 0; i < tmp.length; i++) {
+    tmp[i].textContent = `${arrayOfTemps[i].temp} ${currentUnits}`;
+    feels[i].textContent =
+      `Feels: ${arrayOfTemps[i].feelslike} ${currentUnits}`;
+    highlow[i].textContent =
+      `H: ${arrayOfTemps[i].tempmax} ${currentUnits}, L: ${arrayOfTemps[i].tempmin} ${currentUnits}`;
+  }
 }
 
 async function getWeather(location) {
@@ -49,6 +70,20 @@ async function getWeather(location) {
     currentForecastContainer.innerHTML = "";
     weatherDataDiv.innerHTML = "";
 
+    //show convert temperature button only when data is present
+    convertBtn.className = "active";
+
+    //create an array of temps to make it easier to convert units later
+    for (let i = 0; i < 6; i++) {
+      const obj = {
+        temp: data.days[i].temp,
+        feelslike: data.days[i].feelslike,
+        tempmax: data.days[i].tempmax,
+        tempmin: data.days[i].tempmin,
+      };
+      arrayOfTemps.push(obj);
+    }
+
     //forecast for today
     const currentForecastDiv = document.createElement("div");
     currentForecastDiv.classList.add("weather-day-div");
@@ -65,7 +100,7 @@ async function getWeather(location) {
 
     const currentTempDiv = document.createElement("div");
     currentTempDiv.classList.add("temp-div");
-    currentTempDiv.textContent = `${data.days[0].temp} F`;
+    currentTempDiv.textContent = `${arrayOfTemps[0].temp} ${currentUnits}`;
 
     const currentExtraInfoDiv = document.createElement("div");
     currentExtraInfoDiv.classList.add("extra-info-div");
@@ -74,10 +109,12 @@ async function getWeather(location) {
     currentConditionsDiv.textContent = `${data.days[0].conditions}`;
 
     const currentFeelsDiv = document.createElement("div");
-    currentFeelsDiv.textContent = `Feels: ${data.days[0].feelslike} F`;
+    currentFeelsDiv.classList.add("feels-div");
+    currentFeelsDiv.textContent = `Feels: ${arrayOfTemps[0].feelslike} ${currentUnits}`;
 
     const currentHighLowDiv = document.createElement("div");
-    currentHighLowDiv.textContent = `H: ${data.days[0].tempmax} F, L: ${data.days[0].tempmin} F`;
+    currentHighLowDiv.classList.add("high-low-div");
+    currentHighLowDiv.textContent = `H: ${arrayOfTemps[0].tempmax} ${currentUnits}, L: ${arrayOfTemps[0].tempmin} ${currentUnits}`;
 
     currentExtraInfoDiv.append(currentConditionsDiv);
     currentExtraInfoDiv.append(currentFeelsDiv);
@@ -108,7 +145,7 @@ async function getWeather(location) {
 
       const tempDiv = document.createElement("div");
       tempDiv.classList.add("temp-div");
-      tempDiv.textContent = `${data.days[i].temp} F`;
+      tempDiv.textContent = `${arrayOfTemps[i].temp} ${currentUnits}`;
 
       const extraInfoDiv = document.createElement("div");
       extraInfoDiv.classList.add("extra-info-div");
@@ -117,10 +154,12 @@ async function getWeather(location) {
       conditionsDiv.textContent = `${data.days[i].conditions}`;
 
       const feelsDiv = document.createElement("div");
-      feelsDiv.textContent = `Feels: ${data.days[i].feelslike} F`;
+      feelsDiv.classList.add("feels-div");
+      feelsDiv.textContent = `Feels: ${arrayOfTemps[i].feelslike} ${currentUnits}`;
 
       const highLowDiv = document.createElement("div");
-      highLowDiv.textContent = `H: ${data.days[i].tempmax} F, L: ${data.days[i].tempmin} F`;
+      highLowDiv.classList.add("high-low-div");
+      highLowDiv.textContent = `H: ${arrayOfTemps[i].tempmax} ${currentUnits}, L: ${arrayOfTemps[i].tempmin} ${currentUnits}`;
 
       extraInfoDiv.append(conditionsDiv);
       extraInfoDiv.append(feelsDiv);
@@ -132,6 +171,38 @@ async function getWeather(location) {
       weatherDayDiv.append(infoDiv);
       weatherDataDiv.append(weatherDayDiv);
     }
+
+    convertBtn.onclick = function () {
+      if (currentUnits === "F") {
+        let newTempsArray = [];
+        for (let i = 0; i < arrayOfTemps.length; i++) {
+          const newTempsObj = {
+            temp: convertToCelsius(arrayOfTemps[i].temp),
+            feelslike: convertToCelsius(arrayOfTemps[i].feelslike),
+            tempmax: convertToCelsius(arrayOfTemps[i].tempmax),
+            tempmin: convertToCelsius(arrayOfTemps[i].tempmin),
+          };
+          newTempsArray.push(newTempsObj);
+        }
+        arrayOfTemps = newTempsArray;
+        currentUnits = "C";
+        updateTempsDisplay();
+      } else {
+        let newTempsArray = [];
+        for (let i = 0; i < arrayOfTemps.length; i++) {
+          const newTempsObj = {
+            temp: convertToFahrenheit(arrayOfTemps[i].temp),
+            feelslike: convertToFahrenheit(arrayOfTemps[i].feelslike),
+            tempmax: convertToFahrenheit(arrayOfTemps[i].tempmax),
+            tempmin: convertToFahrenheit(arrayOfTemps[i].tempmin),
+          };
+          newTempsArray.push(newTempsObj);
+        }
+        arrayOfTemps = newTempsArray;
+        currentUnits = "F";
+        updateTempsDisplay();
+      }
+    };
   } catch (error) {
     alert(error.message);
   }

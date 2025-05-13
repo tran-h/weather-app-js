@@ -45,3 +45,11 @@ img {
   width: 80px;
   height: 80px;
 }
+
+.inactive {
+    display: none;
+}
+
+.active {
+    display: block;
+}
